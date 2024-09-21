@@ -1,5 +1,10 @@
 "use server"
 
+import { getCollection } from "../lib/db"
+import bcrypt from "bcrypt"
+import {cookies} from "next/headers"
+import jwt from "jsonwebtoken"
+
 function isAlphaNumeric(text) {
     const regex = /^[a-zA-Z0-9]*$/
     return regex.test(text)
@@ -38,8 +43,26 @@ export const register = async function(prevState, formData) {
         }
     }
 
+    // hash the password first
+    const salt = bcrypt.genSaltSync(10)
+    ourUser.password = bcrypt.hashSync(ourUser.password, salt)
+
     // Store new user
+    const usersCollection = await getCollection("users")
+    const newUser = await usersCollection.insertOne(ourUser)
+    const userId = newUser.insertedId.toString()
+
+    // create the JWT value
+    const ourTokenValue = jwt.sign({skyColour: "blue", userId: userId, exp: Math.floor((Date.now() / 1000) + 60 * 60 * 24)}, process.env.JWTSECRET)
+
     // Log user in
+    cookies().set("haikuapp", ourTokenValue, {
+        httpOnly: true,
+        sameSite: "strict",
+        maxAge: 60 * 60 * 24,
+        secure: true
+    })
+
     return {
         success: true
     }
