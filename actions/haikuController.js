@@ -4,6 +4,13 @@ import { redirect } from "next/navigation"
 import { getUserFromCookie } from "../lib/getUser"
 import { ObjectId } from "mongodb"
 import { getCollection } from "../lib/db"
+import cloudinary from 'cloudinary'
+
+const cloudinaryConfig = cloudinary.config({
+    cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+})
 
 function isAlphaNumericWithSomeGrammer(text) {
     const regex = /^[a-zA-Z0-9 .,;]*$/
@@ -11,6 +18,10 @@ function isAlphaNumericWithSomeGrammer(text) {
 }
 
 async function sharedHaikuLogic(formData, user) {
+    // console.log(formData.get("signature"))
+    // console.log(formData.get("public_id"))
+    // console.log(formData.get("version"))
+
     const errors = {}
 
     const ourHaiku = {
@@ -46,6 +57,12 @@ async function sharedHaikuLogic(formData, user) {
     if (!isAlphaNumericWithSomeGrammer(ourHaiku.line2)) errors.line2 = "Only letters, numbers and grammer characters allowed"
     if (!isAlphaNumericWithSomeGrammer(ourHaiku.line3)) errors.line3 = "Only letters, numbers and grammer characters allowed"
 
+    // verify image signature
+    const expectedSignature = cloudinary.utils.api_sign_request({public_id: formData.get("public_id"), version: formData.get("version")}, cloudinaryConfig.api_secret)
+    if (expectedSignature === formData.get("signature")) {
+        ourHaiku.image = formData.get("public_id")
+    }
+    
     return {
         errors,
         ourHaiku
