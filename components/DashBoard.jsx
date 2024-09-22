@@ -1,9 +1,12 @@
 import { getCollection } from "../lib/db"
 import { ObjectId } from "mongodb"
+import Link from "next/link"
+import { deleteHaiku } from "../actions/haikuController"
 
 async function getHaikus(userId) {
     const collection = await getCollection("haikus")
-    const results = await collection.find({author: ObjectId.createFromHexString(userId)}).sort().toArray()
+    // Sort haikus by ID descending (newest first (ie. -1))
+    const results = await collection.find({author: ObjectId.createFromHexString(userId)}).sort({_id: -1}).toArray()
     return results
 }
 
@@ -22,6 +25,11 @@ export default async function DashBoard(props) {
                         <br />
                         {haiku.line3}
                         <br />
+                        <Link href={`/edit-haiku/${haiku._id.toString()}`}>Edit</Link>
+                        <form action={deleteHaiku}>
+                            <input name="id" type="hidden" defaultValue={haiku._id.toString()}/>
+                            <button>Delete</button>
+                        </form>
                         <hr />
                     </div>
                 )
