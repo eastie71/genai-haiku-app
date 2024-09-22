@@ -1,9 +1,15 @@
 "use client"
 
+import { useState } from "react"
 import {useFormState} from "react-dom"
 import { createHaiku, editHaiku } from "../actions/haikuController"
+import { CldUploadWidget } from "next-cloudinary"
 
 export default function HaikuForm(props) {
+    const [signature, setSignature] = useState("")
+    const [public_id, setPublicId] = useState("")
+    const [version, setVersion] = useState("")
+
     let actualAction
 
     if (props.action === "create") {
@@ -72,7 +78,35 @@ export default function HaikuForm(props) {
                 </div>
                 )}
             </div>
+            <div className="mb-4">
+                <CldUploadWidget 
+                    onSuccess={(result, {widget}) => {
+                        console.log(result?.info)
+                        setSignature(result?.info.signature)
+                        setPublicId(result?.info.public_id)
+                        setVersion(result?.info.version)
+                    }}
+                    onQueuesEnd={(result, {widget}) => {
+                        widget.close()
+                    }} signatureEndpoint="/widget-signature">
+                    {({ open }) => {
+                        // Need this function with preventDefault to avoid form submission
+                        function handleClick(e) {
+                            e.preventDefault()
+                            open()
+                        }
+                        return (
+                        <button className="btn btn-secondary" onClick={handleClick}>
+                            Upload an Image
+                        </button>
+                        );
+                    }}
+                </CldUploadWidget>
+            </div>
             <input type="hidden" name="haikuId" defaultValue={props.haiku?._id.toString()}/>
+            <input type="hidden" name="public_id" value={public_id} />
+            <input type="hidden" name="version" value={version} />
+            <input type="hidden" name="signature" value={signature} />
             <button className='btn btn-primary'>Submit</button>
         </form>
     )
