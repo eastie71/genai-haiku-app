@@ -72,3 +72,62 @@ export const createHaiku = async function(prevState, formData) {
     // Redirect back to Home page after save
     return redirect("/")
 }
+
+export const editHaiku = async function(prevState, formData) {
+    const user = await getUserFromCookie()
+
+    if (!user) {
+        return redirect("/")
+    }
+
+    const results = await sharedHaikuLogic(formData, user)
+
+    if (results.errors.line1 || results.errors.line2 || results.errors.line3) {
+        return {errors: results.errors}
+    }
+
+    const haikusCollection = await getCollection("haikus")
+
+    // Get the ID
+    let haikuId = formData.get("haikuId")
+    if (typeof haikuId != "string") haikuId = ""
+
+    // Make sure only authors can update their own haiku
+    const haikuToCheck = await haikusCollection.findOne({_id: ObjectId.createFromHexString(haikuId)})
+    if (haikuToCheck.author.toString() !== user.userId) {
+        return redirect("/")
+    }
+
+    console.log("ready to update: " + haikuId)
+    // OK to save to DB
+    await haikusCollection.findOneAndUpdate({_id: ObjectId.createFromHexString(haikuId)}, {$set: results.ourHaiku})
+
+    // Redirect back to Home page after save
+    return redirect("/")
+}
+
+export const deleteHaiku = async function(formData) {
+    const user = await getUserFromCookie()
+
+    if (!user) {
+        return redirect("/")
+    }
+
+    const haikusCollection = await getCollection("haikus")
+
+    // Get the ID
+    let haikuId = formData.get("id")
+    if (typeof haikuId != "string") haikuId = ""
+
+     // Make sure only authors can update their own haiku
+     const haikuToCheck = await haikusCollection.findOne({_id: ObjectId.createFromHexString(haikuId)})
+     if (haikuToCheck.author.toString() !== user.userId) {
+         return redirect("/")
+     }
+ 
+     // OK to delete from DB
+     await haikusCollection.deleteOne({_id: ObjectId.createFromHexString(haikuId)})
+ 
+     // Redirect back to Home page after delete
+     return redirect("/")
+ }

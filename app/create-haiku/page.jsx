@@ -11,7 +11,7 @@ export default async function Page() {
     return (
         <>
             <h2 className="text-center text-2xl text-gray-600 mb-5">Create Haiku</h2>
-            <HaikuForm />
+            <HaikuForm action="create" />
         </>
     )
 }
