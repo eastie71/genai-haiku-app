@@ -1,11 +1,22 @@
-import Link from 'next/link'
 import RegisterForm from '../components/RegisterForm'
+import { getUserFromCookie } from '../lib/getUser'
+import DashBoard from '../components/DashBoard'
 
-export default function Page() {
+export default async function Page() {
+    const user = await getUserFromCookie()
+
     return (
         <>
-            <p className="text-center text-2xl text-gray-600 mb-5">Don&rsquo;t have an account? <strong>Create One</strong></p>
-            <RegisterForm></RegisterForm>
+            {user && (
+                <DashBoard user={user} />
+            )}
+            {!user && (
+                <>
+                    <p className="text-center text-2xl text-gray-600 mb-5">Don&rsquo;t have an account? <strong>Create One</strong></p>
+                    <RegisterForm/>
+                </>
+            )}
+            
         </>
     )
 }
