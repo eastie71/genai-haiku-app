@@ -1,5 +1,6 @@
 import RegisterForm from '../components/RegisterForm'
 import { getUserFromCookie } from '../lib/getUser'
+import DashBoard from '../components/DashBoard'
 
 export default async function Page() {
     const user = await getUserFromCookie()
@@ -7,7 +8,7 @@ export default async function Page() {
     return (
         <>
             {user && (
-                <p>Welcome, you are logged in.</p>
+                <DashBoard user={user} />
             )}
             {!user && (
                 <>
