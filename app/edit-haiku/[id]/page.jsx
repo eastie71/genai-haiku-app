@@ -1,7 +1,7 @@
-import HaikuForm from "../../../components/HaikuForm"
-import { getCollection } from "../../../lib/db"
+import HaikuForm from "@/components/HaikuForm"
+import { getCollection } from "@/lib/db"
 import { ObjectId } from "mongodb"
-import { getUserFromCookie } from "../../../lib/getUser"
+import { getUserFromCookie } from "@/lib/getUser"
 import { redirect } from "next/navigation"
 
 async function getDoc(id) {

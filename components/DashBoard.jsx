@@ -16,6 +16,8 @@ export default async function DashBoard(props) {
         <div>
             <h2 className="text-center text-2xl text-gray-600 mb-5">Your Haikus</h2>
             {haikus.map((haiku, index) => {
+                haiku._id = haiku._id.toString()
+                haiku.author = haiku.author.toString()
                 return <Haiku haiku={haiku} key={index} />
             })}
         </div>
